@@ -1,0 +1,124 @@
+Git
+
+
+Version/source kontrol - pamti razlicite verzije projekta; pomaze da se bolje radi u timu, da se prate promene na projektu
+VCS - version control system
+
+		Local repository:
+
+
+cd do foldera koji je working directory
+git init (unutar foldera);
+ls -a pokazuje sve fajlove;
+Initialized empty Git repository in /Users/vika/Desktop/Story/.git/ -> Story - je working directory;
+
+*da bi se pratile promene fajlova, mora fajl da se doda u staging area; medjuprostor u kome biramo fajlove koje zelimo da commit-ujemo
+git status -> vidimo stanje fajlova, koji jos jesu ili nisu komitovani 
+git add chapter1.txt -> time je chapter1 trakovan, i spreman da bude komitovan, nalazi se u staging area;
+git commit -m “poruka” (poruke je najbolje pisati u prezentu) -> komitovanje u local repository;
+git log - vidimo promene; HEAD -> master oznacava gde smo trenutno
+git add .  - dodaje sve promene/fajlove iz working directory-ja
+gir rm —cached -r  . -> da se obrise iz git staging area; (r je recursive)
+
+*git checkout chapter3.txt -> ako se prave promene kojima nismo zadovoljni, a koje nisu trakovane i komitovane, moze da se vrate u prethodno stanje, tj skroz da se isprave u poslednje komitovanu verziju;
+git diff fajl1 -> pokazuje razlike u razlicitim verzijama
+
+
+
+		Remote repository (GitHub): 
+
+
++, new repository
+ako treba da opisemo sta je unutra, kliknemo initialize w/a readme
+upload files, select all
+commit
+
+Push existing repo from local to remote:
+1.create remote
+git remote add origin (pejst url sa githaba foldera)
+2.
+git push -u origin master -> gura u remote rep; -u linkuje remote i local repo; master je default branch svih komitova; origin je samo konvencija, ime
+
+local i remote repo mogu da budu iste, tj paralelene
+local repo: .git (Story), remote: GitHub
+
+		
+		Cloning 
+
+remote repo to pull it to local machine tj working directory:
+git clone https://github.com/austinzheng/swift-2048.git
+na sajtu se klikne clone or download, copy url
+
+		Git ignore: za API,pasvorde itd
+
+
+touch .gitignore -> da se napravi tajni fajl ; u taj fajl se stavljaju fajlovi koje git treba da ignorise kad komituje;
+npr: .DS_Store, secrets.txt
+# je za komentare; * wild card *.txt - svi koji su fajlovi txt ce biti ignorisani
+
+
+		Branches/branching i merging
+
+!!u insights, network na sajtu vidimo grane
+master branch: main grana komita tj save points, tu je glavni progres, u local repo; kada pushujemo, gurnemo ih u remote repo
+mozemo da pravimo kolko occemo, ne mora sve na master; u isto vreme moze da se eskperimentise sa strane al i radi na glavnoj grani; paralelne grane
+ako u nekom trenutku shvatimo da su eksperimentalnoj dobre promene moze putem merge da se prebaci na main branch, i odatle moze dalje;
+uglavnom na projektima ima veliki broj grana; uglavnom kad se zna da sve dobro radi, stavlja se kod na master branch
+
+git branch - pokazuje sve grane; * je ispred one na kojoj smo trenutno
+git branch alien-plot -> ime nove grane
+git checkout alien-plot -> da se prebaci na drugu granu ili master, da se vrati na master
+git checkout -b test -> da se napravi i prebaci na novu granu, test 
+
+		Merge:
+
+da se spoje promene sa sporedne grane, jer su dobre, na glavnu granu (ili sa glavne na sporednu): 
+prebaci se na glavnu granu putem checkout,
+git merge alien-plot; to otvori vim text editor u komand :q! da se sacuva i izadje
+(ili obrnuto ako je sa glavne na sporednu)
+
+Unutar GitHub tj remote repo: 
+
+da se spoje promene iz eksperimentalne u master; iz master grane klikne se new pull request, 
+base master compare to experimental
++je dodavanje, to su promene
+create pull request, confirm merge
+onda insight, network, grane se spojile
+
+new repo, intialize w a readme
+create new file, neki tekst, commit new fale, commit to the master branch
+branch new ,experimental, kopira sve iz mastera u tu novu; tu edit na neki od fajlova, commit to experimental branch
+switch to master, tih promena tu nema; create new file, bla bla ,commit to master branch
+
+Merge conflict: ako se desi, obrisu se linije iz koda;
+
+
+
+		Forking and pull request
+
+git pull - da se preuzmu promene od nekog drugog
+
+to je za saradnju i tim;
+copy i clone nisu isto; fork je copy koda repo druge osobe; 
+odatle moze git clone na lokalnom repo, i onda moze to ponovo push na remote repo
+pull req: da se trazi dozvola originalnog remote repo; ako je ok onda approve, pa merguje
+npr nadjemo repo koju ocemo, fork (copy), naprave se neke promene, 
+(ta promena se na grafikonu originala vidi u network i members, kao zelena grana sa strane), commit
+odatle moze create pull req, i originalnom autoru se pise zasto bi trebalo da se merguje sa originalnom repo
+onda se u originalu vidi pull req, moze da se vide commits, appprove , merge pull, confirm merge
+i u grafikonu se vidi nova grana, fork, pa merge na glavnu granu glavne repo tj master branch
+
+
+
+
+
+da se stavi sajt:
+settings-github pages
+master branch
+*nece da aploaduje foldere sa vise od 100 foldera unutra
+
+https://github.com/github/gitignore/blob/master/Node.gitignore
+Gitignore and the absence of NPM Modules on GitHub Projects
+
+
+
