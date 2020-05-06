@@ -46,8 +46,9 @@ local repo: .git (Story), remote: GitHub
 		Cloning 
 
 remote repo to pull it to local machine tj working directory:
-git clone https://github.com/austinzheng/swift-2048.git
 na sajtu se klikne clone or download, copy url
+git clone https://github.com/austinzheng/swift-2048.git
+
 
 		Git ignore: za API,pasvorde itd
 
