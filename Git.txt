@@ -1,4 +1,4 @@
-+++Git
+****Git
 
 
 Version/source kontrol - pamti razlicite verzije projekta; pomaze da se bolje radi u timu, da se prate promene na projektu
