@@ -1,0 +1,588 @@
+SQL
+
+Structured Query language
+SQL is a standard language which is essential to work with all popular, free and comercial RELATIONAL databases (PostgreSQL, Oracle, Microsoft SQLserver, Google BigQuery, Maria DB, MySQL)
+SQL editor - to connect, run and execute SQL scripts (SQLectron)
+
+Database - is a collection of information set and organized so it can be easily accessed, updated and managed;  place where u can store, manipulate and retrieve data
+Relational database - is a set of data organized into tables; kada 2 ili vise tabela su medjusobno relaciono povezane
+SQL se koristi kako bismo pristupili dati i relacionim db
+TABELA se sastoji od kolona i redova (record, jer sadrzi datu entiteta)
+Query - je set instrukcija dat RDMS-u (napisan u SQLu), koji govori RDMS-u koje od informacije koje zelimo treba da nam pokupi
+
+Relacione db su obicno kontrolisane putem Manager system/engina (controls database users and access); object-Relational database management system tj RDMS
+PostgreSQL je RELATIONAL DATABASE MANAGER
+nas komp je server; neko uzima datu od nas
+PostgreSQL, kako se povezuje: treba da ima iTerm i zsh
+psql - mora da se doda PATH
+cd ~
+ls -a
+vi .zshrc
+press i
+export PATH=$PATH:/ pejstuje se ono sto se otvori u cmd u postgres, app…/bin
+press escape
+:wq
+source (da se pokupe promene) .zshrc
+psql - sada radi
+
+II nacin: instalira se brew, brew instal posgresql, brew services start postgresql/stop; createdb 'test’, psql test
+knex.js
+
+https://node-postgres.com/features/pooling
+https://node-postgres.com/api/pool
+
+Komande sa postgres terminal:
+u CMD: psql -U postgres
+\l list all database in postgresql
+\c move inside a database (Da se poveze sa DB: psql -h localhost -p 5432 -U vika test)
+\dt i ime tabele show table\s in a database; 
+\d i ime tabele prikazuje sve redove i kolone te tabele
+\q quit iz psql-a
+psql —help
+\? pomoc
+\i paste pwd/person.sql
+\x exctended display
+
+Extensions: funkcije koje dodaju funkcionalnost db; 
+select * from pg_available_excensions;
+plv8 dozovljavala javascript funkcije
+uuid-ossp: UUID universally unique identifier, dozvoljavala garantovan jedinstven identifikator, kada je identifikator prisutan;
+create extension if not exists "uuid-ossp";
+\df - imamo funkcije
+select uuid_generate_v4(); zato su dobri UUID da budu primary key u table,uvek su jedinstveni
+
+Exporting Query Results to CSV: 
+select * from person left join car on car.id=person.car_id;
+\copy (select * from person left join car on car.id=person.car_id) to '/Users/vika/Desktop/results.csv' delimiter ',' CSV HEADER;
+pritisne se space
+
+Relacija izmedju tablela i polja se zove sema (schema): u relacionim DB sema mora biti jasno definisana pre nego sto se dodaju bilo kakve informacije
+Seme - directories in relational databases
+public schema -> default sema kada create new database 
+*kada stvorimo novog korisnika u relacionim db, oni prave semu vezanu za tog korisnika, tako da mogu da stvore sopstvene tabele i views  na njihovim semama
+employees i departments; warehouse orders stock, archive:  orders_2019  orders_2017
+sam table_123
+create schema archive;
+
+create table archive.employees
+as select * from public.employees
+
+select * from archive.employees;
+
+delete from archive.employees where id < 100;
+
+
+
+									TIPOVI DATE, 3 GLAVNA: 
+
+(ima na sajtu posgre lista vrsta date)
+a) Brojevi (plata, provizija, cene) int, smallint, bigint, float, real/double, decimal/numeric
+b) Datumi (DATE ’25-05-1992’) datum, timestamp/datetime
+c) Stringovi (karakteri) (ime i prezime, mail, job title, brojevi telefona, zip code) varchar, char, text(za unose preko 250 karaktera)
+bigserial - auto increment number; dobar za primary keys
+d) Bigserial (id) - poseban tip date koji increment brojeve; npr nextval(‘person_id_seq'::regclass); select * from person_id_seq;
+select nextval('person_id_seq'::regclass) -> to inkrementuje id;
+sequence je bigint; da se vrati na pocetak: alter sequence person_id_seq restart with (npr) 10;
+e) UUID universally unique identifier, dozvoljavala garantovan jedinstven identifikator, kada je identifikator prisutan;
+
+
+									CASTING & DATA CONVERSION
+
+Auto data conversion
+SQL i sam automatski konvertuje npr. brojeve u stringove/karaktere, i datume u brojeve;
+npr select ‘hello’ || 3 hello3 -> 3 se automatski konvertuje iz broja u string; 45 || 3 ne moze
+select 17 + '3' -> 20, 3 se automatski konvertuje iz stringa u broj; ’17’ + ‘3’ ne moze
+SELECT * WHERE date_of_birth < '2020-1-1'; 2020-1-1 se automatski konvertuje iz stringa u datum; 
+**DATUM se u relacionim bazama podataka cuva kao broj
+SELECT date_of_birth || ' 9:00’; datum se automatski konvertuje iz datuma u string
+
+3 funkcije: to_char(), to_number(), to_date()
+1. to_char()
+a)Cast date to character
+y- godina
+m- mesec
+d-dan
+SELECT to_char (date_of_birth, 'yyyy')
+SELECT to_char (date_of_birth, 'yyyy-mm-dd')
+SELECT to_char (date_of_birth, 'yyyy Month dd’); Mon- Apr Month-April
+SELECT to_char (date_of_birth, 'Day yyyy Month dd')
+SELECT to_char (date_of_birth, 'Mon dd,yy')
+b) Cast number to character
+L- valuta
+SELECT to_char (28200.17,'L 099,999.999'); -> $  028,200.170
+c) Cast timestamp to character
+Timestamp -> dates with time, funkcija now()
+SELECT to_char(now(),'Mon dd,yyyy');
+h-sat; hh-12 hour format(10) (za hh ide na kraju pm/am), hh24-24 hour format(22)
+mi-minut
+ss- sekunde
+SELECT to_char(now(),'hh24:mi:ss');
+
+2. to_number()
+za razliku od to_char,to_number ne zaokruzuje brojeve
+SELECT to_number('$ 21,450.22','L 99,999.99'); 21450.22
+SELECT to_number('$ 21,450.22','L 99,999.99')+1000; 22450.22
+
+3. to_date()
+SELECT to_date('November 21,1997','Month dd,yyyy'); 1997-11-02
+select to_date('21/11/1997','dd/mm/yyyy'); 1997-11-21
+select to_timestamp('November 21,1997 21@01@44','Month dd,yyyy hh24@mi@ss'); 1997-11-21 21:01:44+07 (07 je vremenska zona)
+
+
+									CONSTRAINTS
+
+se uvode kako bi bila bolja tabela; NOT NULL, bigserial , PRIMARY KEY su sve constraints;
+svi imaju ime i datum rodjenja, tu ide not null, ako je npr email onda njemu ne mora not null
+constraint definise uslov/e za kolone tabele da bi cuvalo datu od toga da ne bude nevazeca; 
+tj neke od kolona mogu uvek da imaju vrednost (odnosno da ne budu null) ili jedistvenu ili default vrednost
+
+1. Primary key - je jedinstvena vrednost/ne moze da bude null; pravi automatske indekse; pomocu njih baze podataka lakse lociraju unose
+2. Not null
+3. Unique - ne mogu 2/vise unosa sa istom vrednoscu u koloni; alter table person add unique(email);
+4. Default - vrednost koja nije null
+5. Foreign Key - ne mora da bude jedinstven, i moze da ima vrednost null; ne dozvoljavaju da se unose vrednosti na koje nemaju referencu;
+?unosi ne mogu onda normalno da se brisu sa tim contraint-om, mora da se brise unos, pa tek onda referenca?
+(primer za foreign: 
+create table publishers (id int, publisher_name varchar (200), primary_key (id) ) 
+alter table books add publisher_id int
+alter table books add FOREIGN KEY (publisher_id) REFERENCES publishers (id)
+insert into publishers values (1, ‘bla’)
+)
+**Use with joins
+update books
+set publisher_id = (select id, 
+				from publishers 
+				where publisher_name ilike ‘Bloo%’)
+where title ilike ‘harry%’
+
+select title, publisher_name
+from books b
+inner join piblishers p
+on b.publisher_id = p.id
+
+ 6.Check - is used to limit the value range that can be placed in a column; alter table person add check(gender = 'Female' or gender = 'Male');
+
+SERIAL PRIMARY KEY - automatski povecava brojeve kako bi bili jedinstevni tj. 1 treba da ucim 2 hello itd
+RETURNING * - koristi se kad god apdejtujemo, insertujemo ili dilitujemo datu, treba da se vrati tj return data
+
+*Kako da se doda constraint: alter table person add primary key (id);
+*Kako da se skinu contraints: alter table person drop constraint person_pkey;
+
+
+								JOINS IN SQL
+
+
+Public (schema) 2 tables: 
+1. public.departments
+2. public.employees (department_id)
+
+select * from departments
+where id=1
+* denormalisation
+
+Entity relationship diagram (ERD)
+
+table departments							table employees
+PRIMARY KEY id	 -> svi imaju jedinstven id		PRIMARY KEY id
+name										FOREIGN KEY department_id -> povezuje sa drugom tabelom (tj primary key-om: department_id, customer_id..)
+											first_name, last_name…
+
+JOIN TYPES IN SQL
+
+a) Cartesian join: nije preporucljiv jer pravi sve moguce kombinacije podataka iz tabela; dobar je za tabele sa manjim brojem podataka
+
+select first_name, last_name, department_id, name as department_name
+from eployees, departments
+where employees.department_id = departments.id
+
+isti primer sa aliasima: 
+select e.first_name, e.last_name, e.department_id, d.name, e.id as employee_id
+from employees as e, departments as d
+where e.department_id = d.id
+and e.id = 70 / d.name = ‘IT’
+
+b) Inner Join: spaja samo povezane kombinacije tj ono sto je zajednicko u obe tabele; 
+sve sto spaja employees i departments; ako postoji isti foreign key u obe, dobijamo inner join
+
+ON - Spojiti tabele pod odredjenim uslovom tj kolonom
+
+select first_name, last_name, deparment_id, name as department_name
+from eployees
+INNER JOIN departments
+ON employees.department_id = departments.id
+where name = ‘Marketing’
+and
+
+select title, publisher_name
+from books b
+inner join piblishers p
+on b.publisher_id = p.id
+
+c) Outer join
+
+* Left-outer: ako postoje employees bez departmenta, bice prikazani u rezultatima
+pokazuje i zaposlene bez departments_id
+
+LEFT OUTER JOIN departments as d
+
+* Right-outer: pokazuje sve departments, i one koje nisu spojeni sa employees;
+pokazuje imena departments svih, iakonema npr u marketingu ljudi iz FL
+
+select e.first_name, e.last_name, d.name
+from employees_fl as e
+RIGHT OUTER JOIN departments as d
+ON e.department_id = d.id
+
+* Full-outer: pokazace sve; pokazuje kombo left i right rezultata
+
+FULL OUTER JOIN department as d
+
+								COMBINATION RELATIONSHIPS
+
+Za spajanje query-ja mora da se vodi racuna da oba imaju iste field type (first_name, last_name..); moraju da se poklapaju po tipu polja (var char sa var char itd)
+
+1. UNION; spaja rezultate 2 query-ja u 1 tabelu
+
+	SELECT first_name,last_name,country_of_birth,salary
+	from person
+	WHERE country_of_birth='China'
+	UNION
+	SELECT first_name,last_name,country_of_birth,salary
+	from person
+	where salary >= '5500'
+	order BY first_name;
+2. UNION ALL; za razliku od union nema filter kojim sprecava pojavu duplikata (pokazace rezultat i 1. i 2. query-ja, npr osobu iz Kine sa platom >= 5500)
+3. INTERSECT; funkcionise kao and; vraca odgovarajuci rezultat iz oba query-ja; pokazuje zaposlene iz Kine sa platom > 5500
+4. EXCEPT; oduzima rezultat drugog query-ja od prvog; pokazuje zaposlene iz Kine, sa platom manjom od 5500
+
+								DATA DEFINITION LANGUAGE - DDL
+
+
+1. CREATE DATABASE vika;
+CREATE TABLE kuhinja(
+    todo_id serial primary key,
+    description varchar(255)
+  );
+
+2. DROP DATABASE vika; 
+DROP TABLE kuhinja;
+DROP COLUMN slatko;
+
+3. ALTER TABLE books
+ALTER COLUMN title type varchar (100)
+insert into books values (….)
+Alter sluzi da se promeni struktura entiteta/change column data type
+	RENAME - alter table books rename column price to base_price/“base_price”
+	ADD A NEW COLUMN - alter table  books add pages int; !Default vrednost null ! update books set pages = 402 where id=1 set pages=307 where id =2
+
+
+
+								DATA MANIPULATION - DML
+
+1. SELECT * FROM kuhinja;
+SELECT  statement - preko njega dobijamo datu koja nam treba iz bilo koje tabele koje zelimo
+SELECT * - preko njega dobijamo sve kolone iz odredjene tabele sa koje citamo 
+SELECT first_name, phone FROM kuhinja;
+
+!! select je iz CRUD read operation!!
+
+~Create new table with select statement
+da se napravi novu tabelu iz postojece, tj kopirajuci podatke iz stare
+u tom procesu se ne nasledjuju constraints
+
+select * from eployees 
+where hire_date >= ‘2017-01-01’ and hire_date < ‘2018-01-01’
+
+create table employees_2017 as 
+select id, first_name..from employees
+isti podaci za hire date
+
+~Create an empty table with select statement
+da se napravi nova tabela iz stare, bez kopiranja podataka iz nje
+
+create table employees_2018
+as
+select * from employees_2017
+where 1 = 2 -> besmislen uslov, da bi tabela bila prazna
+
+~Insert new records using select statement 
+create a new table w/emp full name and pay for this month “emp_pay_mar19”
+
+create table emp_pay_mar19 (full_name varchar(200) payment float)
+insert into emp_pay_mar19
+select first_name || ‘ ‘ || last_name as full name,
+base_salary + (base_salary*commision_pct) as payment
+from employees
+
+2. INSERT
+
+A new record to a table
+
+INSERT INTO table (id, first_name, last_name,state,department_id,job_title,base_salary)
+VALUES (394, ‘Pera’, ‘Kline’, ‘GA’, 1, ’Technician’, 1800)
+*Vrednosti treba da se podudaraju sa imenima polja iz prvog reda; polja u koje nismo uneli vrednosti imaju default vrednost NULL
+
+~Insert without specifying column names
+!!Primary key (poput id) ne smeju da imaju duplikat
+INSERT INTO table
+VALUES (396, ‘Pete’, ‘Kline’, null, ‘GA’, null, null, null, null, 1, ‘Technician’, 1800, null)
+*Redosled vrednosti prati redosled imena iz tabele (tj. id, first_name itd)
+
+-Insert records with nested select queries-
+Novi zaposleni: name elsie rajan, job title sekretarica, 
+base salary: max salary of all sekretarice
+commission rate: average of all sekretarice
+
+INSERT INTO table (id, first_name, last_name, job_title, base_salary, commisssion_pct)
+VALUES (400, ‘elsie’, ‘rajan’, ‘sekretarica’,
+( SELECT MAX(base_salary)FROM table WHERE (job_title=‘sekretarice’) ),
+( SELECT AVG(commission_pct)FROM table WHERE (job_title=‘sekretarice’) )
+)
+
+3. UPDATE
+
+A record’s field values
+
+UPDATE table
+SET address = ‘Takovska 47’,
+	zip_code = 303033
+WHERE id = 394
+!!Za update mora da se naglasi za koji record tj where apdejtujemo vrednosti; u suprotnom update utice na sve unose; te promene moze da popravi samo administrator baze podataka
+
+~Update a record using single-row functions
+UPDATE table
+SET commission_pct = 0.0,
+	hire_date= now()
+WHERE id = 394
+
+*Kako se pravi email*
+SELECT LOWER (SUBSTR(first_name, 1, 1) II last_name) AS email_2/“email 2”, email
+FROM table
+
+UPDATE table
+SET email = LOWER (SUBSTR(first_name, 1, 1) II last_name) 
+WHERE email is null;
+where email=‘ ‘ or email is null
+
+4. DELETE
+
+A table’s record
+
+DELETE FROM table 
+WHERE id = 394 / 
+WHERE first_name=‘Pera’ AND last_name=‘Peric’
+!!Bez WHERE, DELETE sve brise
+delete from person where country_of_birth='China'  and email ilike '%g';				
+
+												
+
+									FUNCTIONS IN SQL
+
+Function - je kao crna kutija sa setom uputstava unutra; kada joj damo input (1 ili vise argumenata), izbaci nam 1 autput: input -> arg 1,arg 2 -> function -> autput
+
+Dva tipa funkcija:
+	1. SINGLE ROW - funkcije koje se vrse za red/record: Sam, David UPPER SAM,DAVID; apply changes on each value in the field
+	Number functions:	a) Round: 10% popusta na kola select id, make, model, price, round(price *.10,2), round(price-(price*.10),2) from car ->2 su dva decimalna mesta; * ne razumem sa minusom tj 52.0,-1, 270,-2 	
+					  	b) Mod(modulo)
+					   	c) Trunc(truncate/cutoff/shorten): select trunc(2.9999,3)=2.999; select trunc(157.92384,-2)=100; * ne razumem sa minusom select trunc(157.92384,-2)=100
+	Character functions: * Case manipulation:    a) Lower select lower(‘HELLO WORLD’); -> hello world
+												b) Upper 
+												c) Init cap Hello World
+						 * Character manipulation:   a) Concat(ination) select concat (‘hello’, ‘world’) helloworld
+												b) Lenght; 	counts the number of characters in string; select lenght (‘hello world’); SELECT LENGTH (concat ('hello', ' world','!'));SELECT concat (first_name, ' ', last_name) as full_name,
+															LENGTH(concat(first_name, ' ', last_name)) as full_name_length
+															from person order by full_name_length DESC limit 10;
+												c) Lpad & Rpad: SELECT lpad ('hello world', 15, '_'); first argument -> string (‘hello world’), second -> total string length that we want to pad (15), third -> what character are we using to 																	left pad the string (_); ____hello world;
+																SELECT rpad(lpad ('hello world', 20, '*#*'),30,'**'); SELECT DISTINCT rpad(country_of_birth,41,'**') from person;
+												d) Trim SELECT LENGTH(trim('    hello world ')); - 11
+												e) Replace; changes a set of characters into a new set; case sensitive; SELECT REPLACE('hello world','world','sam'); first argument -> the string being transformed (‘hello world’), second 															-> the word that we need to change from (world), third -> string/set of characters that we want to replace to (sam); hello sam
+															select replace(replace(address, ‘Ave’, ‘Avenue’), ’St’, ’Street’);
+												f) Substr(substring); SELECT SUBSTRING('helloworld',3,5); first -> string(helloworld), second -> from where(l), third->how many characters (5); lloWo; SELECT 																							SUBSTRING('HelloWorld',0,5); hell SELECT SUBSTRING('HelloWorld',-1,5); hel
+
+	
+	
+	2. MULTIPLE ROW/AGGREGATE FUNKCIJE - WHERE IH NE PRIHVATA!; uzme sva polja rekorda kao input a izbaci 1 vrednost kao autput: Amount 500,300,200,700 SUM 1700
+	
+	SUM - daje ukupnu vrednost za odredjena polja; uzima samo numericka polja (zato sto sabira); select sum(salary) from person where gender='Male';
+	AVG - returns the average numeric value of a numeric column; daje prosecnu numericku vrednost za odredjenu vrednost u odredjenom polju; select avg(salary) from person where gender='Male';
+		select avg(salary) as avg_salary,
+		sum(salary) as sum_salary
+		from person
+		where gender='Male';
+	COUNT - returns the number of rows that matches a specified criteria; broji pojavu vrednosti u odredjenom polju; ne racuna null vrednosti; select count(first_name) from person where country_of_birth in ('China','Indonesia');
+		select count(*) - broji koliko je redova u tabeli; select count(*), sum(salary) from person;
+		*Count za jedinstvene vrednosti polja za odredjenu kolonu: select count(distinct first_name) from person where country_of_birth='China';
+																select count(distinct first_name),count(*)as count_all from person;
+		
+	MIN - returns the smallest value of the selected column; 
+	* Nested queries 
+	zaposleni u Kini cija je plata manja od minimalne plate u Francuskoj (PRVO SE PISE ZA FRANCUZE):
+	SELECT*
+	FROM person
+	WHERE country_of_birth='China'
+	and salary < (SELECT min(salary)
+					from person
+					where country_of_birth='France');
+	MAX - returns the largest value of the selected column; select max(salary) - min(salary) as average from person;
+
+
+			
+
+						CLAUSES
+
+
+1. SELECT col1,col2…
+2. FROM table name
+
+3. WHERE conditions
+koristi samo imena iz tabele; filter data based od conditions
+select first_name, last_name from person where gender='Female';
+	AND, OR, and NOT operatori:
+						a) AND select * from person where gender = 'Male' and country_of_birth = 'Poland';
+						b) OR 	select * from person where country_of_birth = 'Poland' or country_of_birth = 'China';
+								select * from person where gender = 'Male' and (country_of_birth = 'Poland' or country_of_birth = 'China');
+								select * from person where gender = 'Male' and (country_of_birth = 'Poland' or country_of_birth = 'China') and last_name = 'Bicksteth';
+						c) NOT select * from person where country_of_birth not like 'China';
+						AND  je kao puta, OR je kao plus;	select * from person where gender='Male' and (country_of_birth='China' or country_of_birth='Indonesia');
+														select * from person where not gender='Male' and not (country_of_birth='China' or country_of_birth='Indonesia');
+	Operatori poredjenja: >, <, >=, <=, <> je nejednako
+	Matematicki operatori: +, -, *, ,^2 - kvadrat, ^3 kub…, / 5/2=2 -> posto su 5 i 2 celi brojevi(intidzeri), i rezultat ce biti ceo broj; 5/2.0=2.50000; % (modulo) 19%5=4 tj 5+5+5=15, 19-15=4; A factorial is a function that multiplies a number 							by every number below it. For example 5!= 5*4*3*2*1=120
+							*Neto plata svih zaposlenih; NETO PLATA = OSNOVNA PLATA+PROVIZIJA (-POREZ NA DOHODAK?);
+							select first_name, last_name, base salary + (base salary * commision_pct -> provizija) from employess; ilii where base_salary * commision_pct > 2000
+	IN operator: The IN operator allows you to specify multiple values in a WHERE clause; filter data by set of values; 
+				select first_name from person where country_of_birth in ('China', 'Cuba', 'Indonesia’); - u zagradi je SET vrednosti
+	BETWEEN operator: filtering data by range;
+						select * from person where date_of_birth between '2019-01-01' and '2020-01-01';
+						select * from person where date_of_birth>'2019-01-01';
+						select * from person where date_of_birth='2020-01-06';
+	LIKE operator: 	filter data by strings; like je pattern/wild card, trazi 1 karakter, kada znamo tacan broj karaktera
+					select * from person where country_of_birth like '_____d';
+					select * from person where first name like 'R__s_';
+					% - je wild card koji trazi broj karaktera od 0 do beskonacnosti
+					select * from person where email like '%@google%';
+					select * from person where email like '__________v@%';
+					ilike - stringovi su case sensitive, ilike trazi sve, bez obzira dal su velika ili mala slova
+					select * from person where country_of_birth ilike 'p%';
+	IS NULL clause - NULL is a special value that signifies 'no value’; select * from person where email is null; select * from person where email is not null; 
+
+4. GROUP BY col1, col2…
+groups rows that have the same values into summary rows, like "find the number of customers in each country”; is often used with aggregate functions (COUNT, MAX, MIN, SUM, AVG) to group the result-set by one or more columns
+ne prihvata agregatne funkcije!
+select count(email), country_of_birth from person group by country_of_birth;
+* sa jednom dimenzijom: select country_of_birth, count(*) from person group by country_of_birth;
+* sa vise dimenzija: select first_name, last_name, salary,  count(*) as all from person group by first_name,last_name, salary order by salary desc limit 10;
+
+5. HAVING condition
+filter by agregate function;
+select country_of_birth, count(*) from person group by country_of_birth having count(*)>10  order by count desc;
+select country_of_birth,
+count(*)
+from person
+group by country_of_birth having count(*)>20
+and min(salary)>1000;
+													
+6. ORDER BY col1, col2…
+*Order records by column
+ASC - Ascending order (on je default)
+DESC - Descending (opadajuce)
+order by net_salary desc;
+*Order records by multiple columns
+select * from person where gender='Male' order by first_name,country_of_birth desc; bolje je samo jedna kolona
+! Aliasi ne mogu da se koriste posle
+
+7. LIMIT n
+number of records to be obtained; uvek ide na kraju iskaza
+select * from person where gender='Female' order by date_of_birth limit 10; select * from person where gender='Female' order by date_of_birth desc limit 20;
+Pored limita se koristi i FETCH select * from person OFFSET 5 FETCH first 5 row only; offset moze sam, ali fetch uvek ide uz offset
+
+					
+
+						STATEMENTS:
+DISTINCT 
+Pomaze da se nadju jedinstvene vrednosti; ne ponavljaju se vise puta ista imena
+select distinct first_name from person;
+*Multiple columns
+select distinct first_name, last_name from person order by first_name,last_name;
+CASE
+The CASE statement goes through conditions and returns a value when the first condition is met (like an IF-THEN-ELSE statement); If there is no ELSE part and no conditions are true, it returns NULL.
+select first_name, salary,                                                                                               
+case when salary<1000 then 0 
+when salary between 5001 and 7000 then salary*0.11                                   
+else salary*0.15                                                                                                  
+end as income_tax                                                                                                 
+from person;
+
+SELECT CustomerName, City, Country
+FROM Customers
+ORDER BY
+(CASE
+    WHEN City IS NULL THEN Country
+    ELSE City
+END);
+
+??ROUND(AVG(price))
+
+STRING CONCATINATION
+||- operator za spajanje stringova; select 'hello' || ' world';
+
+KEYWORD AS - ALIAS NAMES; za aliase imena redova i tabela
+select  'model' || ' ' || 'price' as "model price";
+time nismo napravili novu kolonu u tabeli, select nema moc to da radi; An alias only exists for the duration of the query
+
+NOW() Funkcija, timestamp: select now()::date; select now()::time; select now()::date  + interval '1 year';
+EXTRACT() - The EXTRACT() function extracts a part from a given date; SELECT EXTRACT(MONTH FROM now());
+AGE() - select first_name, last_name, date_of_birth,  age(now(), date_of_birth)as age from person;
+
+Advanced Functions:
+
+COALESCE KEYWORD  - pise default value  za kolonu ako je vrednost null;select coalesce(email, 'no email')from person;
+NULLIF() KEYWORD - u sql brojevi ne mogu da se dele sa nulom; nullif sluzi da se dobije rezultat null, ako su obe vrednosti iste; select nullif(10,10); ako nisu iste, vraca prvu cifru; select 10 / nullif(0,0); - tako moze da se mnozi sa nulom; ili 10 / NULL
+
+++Duplicate key error/exceptions: ON CONFLICT (id) DO NOTHING;to ne radi ako nemamo unique kolonu tj da imaju contraint;
+UPSERT: ako ocemo promeni on coflict (id) do update set email = EXCLUDED.id; da se apdejtuje postojeca data, u suprotnom insert novi red
+
+
+									ACCESS CONTROL
+
+
+1. VIEWS; entitet
+create view emp_admin as
+select id, first_name, last_name, job_title, address, phone
+from employees
+
+select* from emp_admin
+
+2. ADD ACCESS
+CREATE user sam password ‘sam123’
+ADD - > NAME sam
+DATABASE TYPE postgre
+SERVER ADDRESS localhost
+USER sam
+PASS sam123
+DATABASE postgres
+
+3. GRANT
+
+GRANT select ON employees TO sam
+GRANT insert, update ON employees TO sam
+
+4. REVOKE
+
+REVOKE update ON employees FROM sam
+
+5. USER GROUPS
+create group hr
+GRANT select ON employees TO hr
+create user susan password ‘susan123’ 
+ALTER GROUP hr ADD USER susan
+
+
+
+
+
+
+
+
+
+
+
